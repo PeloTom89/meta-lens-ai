@@ -13,7 +13,7 @@ Talk to ChatGPT, take pictures, and analyze what you see through your Meta Glass
 
 ### 🏠 Home
 
-The landing screen with access to conversations with ChatGPT and icture analysis.
+The landing screen with access to live conversations with ChatGPT, live streaming, and picture analysis through your smart glasses.
 
 ### 💬 Conversation
 
