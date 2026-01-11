@@ -1,5 +1,6 @@
 package com.metalens.app.ui.screens
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -41,6 +42,7 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun HistoryScreen(
     modifier: Modifier = Modifier,
+    onOpenConversation: (String) -> Unit = {},
 ) {
     val context = LocalContext.current.applicationContext
     val storage = remember { ConversationHistoryStorage(context) }
@@ -78,6 +80,7 @@ fun HistoryScreen(
             HistoryRow(
                 title = formatStartedAt(record.startedAtMs),
                 subtitle = stringResource(R.string.history_messages_count, record.messages.size),
+                onClick = { onOpenConversation(record.id) },
                 onDelete = {
                     storage.deleteConversation(record.id)
                     reload()
@@ -91,11 +94,15 @@ fun HistoryScreen(
 private fun HistoryRow(
     title: String,
     subtitle: String,
+    onClick: () -> Unit,
     onDelete: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Surface(
-        modifier = modifier.fillMaxWidth(),
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .clickable(onClick = onClick),
         shape = MaterialTheme.shapes.large,
         tonalElevation = 1.dp,
     ) {

@@ -20,15 +20,18 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.activity.ComponentActivity
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.metalens.app.R
 import com.metalens.app.ui.components.MetaLensTopBar
 import com.metalens.app.ui.screens.ConversationScreen
+import com.metalens.app.ui.screens.HistoryDetailScreen
 import com.metalens.app.ui.screens.HistoryScreen
 import com.metalens.app.ui.screens.HomeScreen
 import com.metalens.app.ui.screens.SettingsScreen
@@ -40,6 +43,9 @@ sealed class MetaLensRoute(
 ) {
     data object Home : MetaLensRoute("home", R.string.tab_home)
     data object History : MetaLensRoute("history", R.string.tab_history)
+    data object HistoryDetail : MetaLensRoute("history/{conversationId}", R.string.tab_history) {
+        fun createRoute(conversationId: String): String = "history/$conversationId"
+    }
     data object Settings : MetaLensRoute("settings", R.string.tab_settings)
     data object Stream : MetaLensRoute("stream", R.string.stream_title)
     data object Conversation : MetaLensRoute("conversation", R.string.conversation_title)
@@ -63,7 +69,9 @@ private fun MetaLensScaffold(navController: NavHostController) {
     val currentRoute = navBackStackEntry?.destination?.route
     val currentTab = bottomTabs.firstOrNull { it.route == currentRoute } ?: MetaLensRoute.Home
     val isFullScreenRoute =
-        currentRoute == MetaLensRoute.Stream.route || currentRoute == MetaLensRoute.Conversation.route
+        currentRoute == MetaLensRoute.Stream.route ||
+            currentRoute == MetaLensRoute.Conversation.route ||
+            currentRoute == MetaLensRoute.HistoryDetail.route
     val canNavigateBack = navController.previousBackStackEntry != null
     val topBarTitle = stringResource(R.string.home_title)
 
@@ -101,6 +109,7 @@ private fun MetaLensScaffold(navController: NavHostController) {
                                         when (tab) {
                                             MetaLensRoute.Home -> Icons.Filled.Home
                                             MetaLensRoute.History -> Icons.Filled.History
+                                            MetaLensRoute.HistoryDetail -> Icons.Filled.History
                                             MetaLensRoute.Settings -> Icons.Filled.Settings
                                             MetaLensRoute.Stream -> Icons.Filled.Home
                                             MetaLensRoute.Conversation -> Icons.Filled.Home
@@ -148,7 +157,22 @@ private fun MetaLensNavHost(
             )
         }
         composable(MetaLensRoute.History.route) {
-            HistoryScreen(modifier = modifier)
+            HistoryScreen(
+                modifier = modifier,
+                onOpenConversation = { id ->
+                    navController.navigate(MetaLensRoute.HistoryDetail.createRoute(id))
+                },
+            )
+        }
+        composable(
+            route = MetaLensRoute.HistoryDetail.route,
+            arguments = listOf(navArgument("conversationId") { type = NavType.StringType }),
+        ) { entry ->
+            val conversationId = entry.arguments?.getString("conversationId").orEmpty()
+            HistoryDetailScreen(
+                conversationId = conversationId,
+                modifier = modifier,
+            )
         }
         composable(MetaLensRoute.Stream.route) {
             com.metalens.app.ui.screens.StreamScreen(

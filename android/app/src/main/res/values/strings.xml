@@ -3,7 +3,7 @@
     <string name="app_name">MetaLens</string>
 
     <string name="home_title">MetaLens AI</string>
-    <string name="home_subtitle">Hands-free voice control, live visual analysis, and real-time streaming.</string>
+    <string name="home_subtitle">Hands-free voice chat, live visual analysis, and real-time streaming.</string>
     <string name="home_glasses_icon_description">Smart glasses</string>
 
     <string name="start_conversation">Start Conversation</string>
@@ -28,6 +28,7 @@
     <string name="history_empty">No conversations yet</string>
     <string name="history_delete_conversation">Delete conversation</string>
     <string name="history_messages_count">%1$d messages</string>
+    <string name="history_detail_not_found">Conversation not found</string>
 
     <string name="connect_my_glasses">Connect my glasses</string>
     <string name="disconnect_my_glasses">Disconnect my glasses</string>

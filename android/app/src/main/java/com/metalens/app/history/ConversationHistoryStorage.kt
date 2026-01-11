@@ -87,6 +87,15 @@ class ConversationHistoryStorage(
         }
     }
 
+    fun getConversation(id: String): ConversationHistoryRecord? {
+        return try {
+            val file = findFileById(id) ?: return null
+            JSONObject(file.readText()).toRecord()
+        } catch (_: Throwable) {
+            null
+        }
+    }
+
     fun deleteConversation(id: String): Boolean {
         return try {
             findFileById(id)?.delete() ?: false
