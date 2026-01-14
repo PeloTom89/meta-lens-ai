@@ -61,6 +61,7 @@ fun HomeScreen(
 
         FeatureActionCard(
             title = stringResource(R.string.start_conversation),
+            subtitle = stringResource(R.string.start_conversation_subtitle),
             icon = Icons.Filled.ChatBubble,
             enabled = isGlassesConnected,
             onClick = onStartConversation,
@@ -71,6 +72,7 @@ fun HomeScreen(
 
         FeatureActionCard(
             title = stringResource(R.string.start_streaming),
+            subtitle = stringResource(R.string.start_streaming_subtitle),
             icon = Icons.Filled.Videocam,
             enabled = isGlassesConnected,
             onClick = onStartStreaming,

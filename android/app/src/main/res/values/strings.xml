@@ -7,6 +7,7 @@
     <string name="home_glasses_icon_description">Smart glasses</string>
 
     <string name="start_conversation">Start Conversation</string>
+    <string name="start_conversation_subtitle">Talk hands-free with AI</string>
     <string name="conversation_title">Conversation</string>
     <string name="conversation_start">Start</string>
     <string name="conversation_speak">Speak</string>
@@ -60,6 +61,7 @@
     <string name="common_save">Save</string>
 
     <string name="start_streaming">Start Streaming</string>
+    <string name="start_streaming_subtitle">See live view from glasses</string>
     <string name="stop_streaming">Stop Streaming</string>
     <string name="stream_title">Streaming</string>
     <string name="live_stream">Live stream</string>
