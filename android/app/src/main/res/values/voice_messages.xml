@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+      Short user-facing messages (TTS/UI).
+      Kept separate from prompts so we can later make them configurable in-app.
+    -->
+    <string name="voice_messages">Analyzing the picture…</string>
+</resources>
+

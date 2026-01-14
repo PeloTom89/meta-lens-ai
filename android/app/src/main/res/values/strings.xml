@@ -68,5 +68,11 @@
     <string name="picture_analysis_subtitle">Capture a photo from your glasses</string>
     <string name="picture_analysis_capturing">Capturing photo…</string>
     <string name="picture_analysis_preparing">Preparing camera…</string>
+
+    <string name="picture_analysis_analyze">Analyze</string>
+    <string name="picture_analysis_analyzing">Analyzing…</string>
+    <string name="picture_analysis_result">Result</string>
+    <string name="picture_analysis_speak">Speak</string>
+    <string name="picture_analysis_stop_speaking">Stop</string>
 </resources>
 

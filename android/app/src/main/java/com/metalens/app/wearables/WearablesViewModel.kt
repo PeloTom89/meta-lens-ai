@@ -36,6 +36,14 @@ class WearablesViewModel(application: Application) : AndroidViewModel(applicatio
 
     // Temporary session used to make "instant" photo after countdown.
     private var preparedPhotoSession: StreamSession? = null
+    private var preparePhotoJob: Job? = null
+    private var capturePhotoJob: Job? = null
+
+    private fun closePreparedPhotoSessionOnce() {
+        val session = preparedPhotoSession
+        preparedPhotoSession = null
+        runCatching { session?.close() }
+    }
 
     fun startMonitoring() {
         if (monitoringStarted) return
@@ -107,8 +115,11 @@ class WearablesViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     fun resetPictureAnalysis() {
-        preparedPhotoSession?.close()
-        preparedPhotoSession = null
+        preparePhotoJob?.cancel()
+        preparePhotoJob = null
+        capturePhotoJob?.cancel()
+        capturePhotoJob = null
+        closePreparedPhotoSessionOnce()
         _uiState.update {
             it.copy(
                 isPreparingPhotoSession = false,
@@ -130,15 +141,16 @@ class WearablesViewModel(application: Application) : AndroidViewModel(applicatio
             return
         }
 
-        viewModelScope.launch {
+        preparePhotoJob?.cancel()
+        preparePhotoJob =
+            viewModelScope.launch {
             if (!_uiState.value.hasActiveDevice) {
                 setRecentError("Connect to glasses first")
                 return@launch
             }
 
             // Reset any previous session
-            preparedPhotoSession?.close()
-            preparedPhotoSession = null
+            closePreparedPhotoSessionOnce()
 
             _uiState.update {
                 it.copy(
@@ -150,6 +162,7 @@ class WearablesViewModel(application: Application) : AndroidViewModel(applicatio
                 )
             }
 
+            var assignedToField = false
             val session =
                 try {
                     Wearables.startStreamSession(
@@ -168,26 +181,34 @@ class WearablesViewModel(application: Application) : AndroidViewModel(applicatio
                     return@launch
                 }
 
-            // Wait for STREAMING so capture is instant later
-            val streamingState =
-                withTimeoutOrNull(8_000) {
-                    session.state.first { it == StreamSessionState.STREAMING }
+            try {
+                // Wait for STREAMING so capture is instant later
+                val streamingState =
+                    withTimeoutOrNull(8_000) {
+                        session.state.first { it == StreamSessionState.STREAMING }
+                    }
+
+                if (streamingState == null) {
+                    _uiState.update {
+                        it.copy(
+                            isPreparingPhotoSession = false,
+                            isPhotoSessionReady = false,
+                            recentError = "Timed out waiting for stream",
+                        )
+                    }
+                    return@launch
                 }
 
-            if (streamingState == null) {
-                session.close()
-                _uiState.update {
-                    it.copy(
-                        isPreparingPhotoSession = false,
-                        isPhotoSessionReady = false,
-                        recentError = "Timed out waiting for stream",
-                    )
+                // Publish prepared session only once fully ready.
+                preparedPhotoSession = session
+                assignedToField = true
+                _uiState.update { it.copy(isPreparingPhotoSession = false, isPhotoSessionReady = true) }
+            } finally {
+                // If we never stored it, we must close to avoid leaks.
+                if (!assignedToField) {
+                    runCatching { session.close() }
                 }
-                return@launch
             }
-
-            preparedPhotoSession = session
-            _uiState.update { it.copy(isPreparingPhotoSession = false, isPhotoSessionReady = true) }
         }
     }
 
@@ -202,7 +223,9 @@ class WearablesViewModel(application: Application) : AndroidViewModel(applicatio
             return
         }
 
-        viewModelScope.launch {
+        capturePhotoJob?.cancel()
+        capturePhotoJob =
+            viewModelScope.launch {
             _uiState.update { it.copy(isCapturingPhoto = true, recentError = null) }
             try {
                 val result = session.capturePhoto()
@@ -238,8 +261,7 @@ class WearablesViewModel(application: Application) : AndroidViewModel(applicatio
                     )
                 }
             } finally {
-                preparedPhotoSession?.close()
-                preparedPhotoSession = null
+                closePreparedPhotoSessionOnce()
                 _uiState.update { it.copy(isPreparingPhotoSession = false, isPhotoSessionReady = false) }
             }
         }
@@ -334,8 +356,9 @@ class WearablesViewModel(application: Application) : AndroidViewModel(applicatio
 
     override fun onCleared() {
         super.onCleared()
-        preparedPhotoSession?.close()
-        preparedPhotoSession = null
+        preparePhotoJob?.cancel()
+        capturePhotoJob?.cancel()
+        closePreparedPhotoSessionOnce()
         deviceSelectorJob?.cancel()
         deviceMetadataJobs.values.forEach { it.cancel() }
         deviceMetadataJobs.clear()

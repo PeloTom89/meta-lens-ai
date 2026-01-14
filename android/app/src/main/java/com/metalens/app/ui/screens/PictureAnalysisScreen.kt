@@ -3,6 +3,7 @@ package com.metalens.app.ui.screens
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,12 +12,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -34,6 +38,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.metalens.app.pictureanalysis.PictureAnalysisViewModel
 import com.meta.wearable.dat.core.Wearables
 import com.meta.wearable.dat.core.types.Permission
 import com.meta.wearable.dat.core.types.PermissionStatus
@@ -41,6 +46,8 @@ import com.metalens.app.R
 import com.metalens.app.wearables.LocalWearablesPermissionRequester
 import com.metalens.app.wearables.WearablesViewModel
 import kotlinx.coroutines.delay
+import android.speech.tts.TextToSpeech
+import java.util.Locale
 
 @Composable
 fun PictureAnalysisScreen(
@@ -49,15 +56,33 @@ fun PictureAnalysisScreen(
 ) {
     val activity = LocalContext.current as ComponentActivity
     val wearablesViewModel: WearablesViewModel = viewModel(activity)
+    val analysisViewModel: PictureAnalysisViewModel = viewModel(activity)
     val permissionRequester = LocalWearablesPermissionRequester.current
-    val uiState by wearablesViewModel.uiState.collectAsStateWithLifecycle()
+    val wearablesState by wearablesViewModel.uiState.collectAsStateWithLifecycle()
+    val analysisState by analysisViewModel.uiState.collectAsStateWithLifecycle()
 
     var countdown by remember { mutableIntStateOf(0) }
     var isCountingDown by remember { mutableStateOf(false) }
 
+    // TTS (UI-owned lifecycle)
+    val context = LocalContext.current
+    var ttsReady by remember { mutableStateOf(false) }
+    val tts =
+        remember {
+            TextToSpeech(context.applicationContext) { status ->
+                ttsReady = status == TextToSpeech.SUCCESS
+            }
+        }
+    DisposableEffect(Unit) {
+        onDispose {
+            runCatching { tts.stop() }
+            runCatching { tts.shutdown() }
+        }
+    }
+
     LaunchedEffect(Unit) {
         // Prepare camera session first (permission + STREAMING), then countdown will trigger capture.
-        if (uiState.capturedPhoto == null && !uiState.isCapturingPhoto && !uiState.isPreparingPhotoSession && !uiState.isPhotoSessionReady) {
+        if (wearablesState.capturedPhoto == null && !wearablesState.isCapturingPhoto && !wearablesState.isPreparingPhotoSession && !wearablesState.isPhotoSessionReady) {
             val permission = Permission.CAMERA
             val statusResult = Wearables.checkPermissionStatus(permission)
             statusResult.onFailure { error, _ ->
@@ -79,10 +104,10 @@ fun PictureAnalysisScreen(
         }
     }
 
-    LaunchedEffect(uiState.isPhotoSessionReady, uiState.capturedPhoto) {
+    LaunchedEffect(wearablesState.isPhotoSessionReady, wearablesState.capturedPhoto) {
         // Start 3..2..1 countdown only once the session is ready and we don't have a photo yet.
-        if (uiState.capturedPhoto != null) return@LaunchedEffect
-        if (!uiState.isPhotoSessionReady) return@LaunchedEffect
+        if (wearablesState.capturedPhoto != null) return@LaunchedEffect
+        if (!wearablesState.isPhotoSessionReady) return@LaunchedEffect
         if (isCountingDown) return@LaunchedEffect
 
         isCountingDown = true
@@ -95,9 +120,48 @@ fun PictureAnalysisScreen(
         isCountingDown = false
     }
 
+    LaunchedEffect(wearablesState.capturedPhoto) {
+        // New photo => reset analysis so user always sees a fresh run.
+        if (wearablesState.capturedPhoto != null) {
+            analysisViewModel.reset()
+            analysisViewModel.analyze(wearablesState.capturedPhoto!!)
+        }
+    }
+
+    LaunchedEffect(analysisState.resultText, ttsReady) {
+        // Auto-speak when we get a new result.
+        val text = analysisState.resultText
+        if (ttsReady && !text.isNullOrBlank()) {
+            val preferred = Locale.US
+            val res = tts.setLanguage(preferred)
+            if (res == TextToSpeech.LANG_MISSING_DATA || res == TextToSpeech.LANG_NOT_SUPPORTED) {
+                tts.setLanguage(Locale.getDefault())
+            }
+            tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, "picture_analysis_result")
+        }
+    }
+
+    LaunchedEffect(analysisState.isAnalyzing, ttsReady) {
+        // Speak a short status message when analysis starts.
+        if (ttsReady && analysisState.isAnalyzing) {
+            val preferred = Locale.US
+            val res = tts.setLanguage(preferred)
+            if (res == TextToSpeech.LANG_MISSING_DATA || res == TextToSpeech.LANG_NOT_SUPPORTED) {
+                tts.setLanguage(Locale.getDefault())
+            }
+            tts.stop()
+            tts.speak(
+                context.getString(R.string.voice_messages),
+                TextToSpeech.QUEUE_FLUSH,
+                null,
+                "picture_analysis_analyzing",
+            )
+        }
+    }
+
     Surface(modifier = modifier.fillMaxSize(), color = Color.Black) {
-        Box(modifier = Modifier.fillMaxSize()) {
-            val photo = uiState.capturedPhoto
+        BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+            val photo = wearablesState.capturedPhoto
             when {
                 photo != null -> {
                     Image(
@@ -107,7 +171,7 @@ fun PictureAnalysisScreen(
                         contentScale = ContentScale.Fit,
                     )
                 }
-                uiState.isPreparingPhotoSession -> {
+                wearablesState.isPreparingPhotoSession -> {
                     Column(
                         modifier = Modifier.align(Alignment.Center),
                         horizontalAlignment = Alignment.CenterHorizontally,
@@ -130,7 +194,7 @@ fun PictureAnalysisScreen(
                         modifier = Modifier.align(Alignment.Center),
                     )
                 }
-                uiState.isCapturingPhoto -> {
+                wearablesState.isCapturingPhoto -> {
                     Column(
                         modifier = Modifier.align(Alignment.Center),
                         horizontalAlignment = Alignment.CenterHorizontally,
@@ -146,7 +210,7 @@ fun PictureAnalysisScreen(
                 }
                 else -> {
                     // Error / empty state
-                    val msg = uiState.recentError ?: "No photo"
+                    val msg = wearablesState.recentError ?: "No photo"
                     Text(
                         text = msg,
                         color = MaterialTheme.colorScheme.error,
@@ -155,6 +219,55 @@ fun PictureAnalysisScreen(
                             Modifier
                                 .align(Alignment.Center)
                                 .padding(24.dp),
+                    )
+                }
+            }
+
+            // Analysis overlay (only when we have a photo)
+            if (photo != null) {
+                Column(
+                    modifier =
+                        Modifier
+                            .align(Alignment.TopStart)
+                            .padding(16.dp)
+                            .background(Color.Black.copy(alpha = 0.55f), shape = MaterialTheme.shapes.medium)
+                            .padding(12.dp)
+                            .fillMaxWidth(0.9f)
+                            .verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            text = stringResource(R.string.picture_analysis_result),
+                            color = Color.White,
+                            style = MaterialTheme.typography.titleSmall,
+                        )
+
+                        if (analysisState.isAnalyzing) {
+                            Text(
+                                text = stringResource(R.string.picture_analysis_analyzing),
+                                color = Color.White,
+                                style = MaterialTheme.typography.bodySmall,
+                            )
+                        }
+                    }
+
+                    analysisState.recentError?.let { err ->
+                        Text(
+                            text = err,
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                    }
+
+                    Text(
+                        text = analysisState.resultText ?: "",
+                        color = Color.White,
+                        style = MaterialTheme.typography.bodyMedium,
                     )
                 }
             }
@@ -171,24 +284,58 @@ fun PictureAnalysisScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
+                val busy = wearablesState.isPreparingPhotoSession || wearablesState.isCapturingPhoto || countdown > 0
+
                 TextButton(
-                    enabled = !uiState.isPreparingPhotoSession && !uiState.isCapturingPhoto && countdown == 0,
+                    enabled = !busy,
                     onClick = {
                         // Reset and start again
                         countdown = 0
                         isCountingDown = false
                         wearablesViewModel.resetPictureAnalysis()
+                        analysisViewModel.reset()
                         wearablesViewModel.preparePhotoCaptureSession()
                     },
                 ) {
                     Text("Retake", color = Color.White)
                 }
 
+                if (photo != null) {
+                    TextButton(
+                        enabled = !analysisState.isAnalyzing,
+                        onClick = {
+                            analysisViewModel.reset()
+                            analysisViewModel.analyze(photo)
+                        },
+                    ) {
+                        Text(stringResource(R.string.picture_analysis_analyze), color = Color.White)
+                    }
+                }
+
+                if (!analysisState.resultText.isNullOrBlank()) {
+                    TextButton(
+                        onClick = {
+                            tts.stop()
+                            val preferred = Locale.US
+                            val res = tts.setLanguage(preferred)
+                            if (res == TextToSpeech.LANG_MISSING_DATA || res == TextToSpeech.LANG_NOT_SUPPORTED) {
+                                tts.setLanguage(Locale.getDefault())
+                            }
+                            tts.speak(analysisState.resultText, TextToSpeech.QUEUE_FLUSH, null, "picture_analysis_result_manual")
+                        },
+                    ) {
+                        Text(stringResource(R.string.picture_analysis_speak), color = Color.White)
+                    }
+                }
+
                 TextButton(
+                    enabled = !busy,
                     onClick = {
                         countdown = 0
                         isCountingDown = false
                         wearablesViewModel.resetPictureAnalysis()
+                        analysisViewModel.reset()
+                        runCatching { tts.stop() }
                         onClose()
                     },
                 ) {
