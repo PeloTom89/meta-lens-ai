@@ -44,6 +44,9 @@
     <string name="settings_openai_api_key">OpenAI API key</string>
     <string name="settings_openai_model">OpenAI Model</string>
     <string name="settings_version">Version</string>
+    <string name="settings_support_development">Support development</string>
+    <string name="settings_support_development_subtitle">Buy Me a Coffee</string>
+    <string name="settings_support_development_url">https://buymeacoffee.com/przemek_nowicki</string>
     <string name="settings_not_set">Not set</string>
     <string name="settings_current">Current</string>
     <string name="settings_selected">Selected</string>

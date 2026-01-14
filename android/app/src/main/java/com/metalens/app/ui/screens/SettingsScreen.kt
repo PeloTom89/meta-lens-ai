@@ -1,5 +1,7 @@
 package com.metalens.app.ui.screens
 
+import android.content.Intent
+import android.net.Uri
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -16,6 +18,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bluetooth
 import androidx.compose.material.icons.filled.BluetoothDisabled
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Coffee
 import androidx.compose.material.icons.filled.Devices
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Wifi
@@ -407,6 +410,23 @@ fun SettingsScreen(
             subtitle = BuildConfig.VERSION_NAME,
             icon = Icons.Filled.Info,
             onClick = {},
+            modifier = Modifier.fillMaxWidth(),
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        FeatureActionCard(
+            title = stringResource(R.string.settings_support_development),
+            subtitle = stringResource(R.string.settings_support_development_subtitle),
+            icon = Icons.Filled.Coffee,
+            onClick = {
+                val intent =
+                    Intent(
+                        Intent.ACTION_VIEW,
+                        Uri.parse(context.getString(R.string.settings_support_development_url)),
+                    )
+                context.startActivity(intent)
+            },
             modifier = Modifier.fillMaxWidth(),
         )
     }
