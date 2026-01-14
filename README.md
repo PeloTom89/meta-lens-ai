@@ -46,9 +46,7 @@ For this reason, the app is not available on the Google Play Store or any other 
 To try MetaLens AI, you’ll need to install it manually by downloading the APK file to your Android phone.
 You’ll also need to enable Developer Mode in the Meta View app. Don’t worry this guide explains everything step by step in the next section.
 
-## Before You Start Instalation MetLens AI
-
-> ⚠️ **Developer Mode Required**  
+> ⚠️ **Developer Mode Required**  - Before You Start Instalation MetLens AI
 > Your Meta glasses must have **Developer Mode enabled** before MetaLens AI app can connect to them.  
 > Without this, the app will won't connect to your smart glasses.
 >
@@ -62,6 +60,8 @@ You’ll also need to enable Developer Mode in the Meta View app. Don’t worry 
 > ![Meta AI Developer Mode](docs/images/meta-view-develop-mode.png)
 >
 > See [Meta Wearables Setup Guide](https://wearables.developer.meta.com/docs/getting-started-toolkit) for detailed instructions.
+
+## Instalation MetaLens AI
 
 After enabling `Developer Mode` in the Meta AI app, follow the steps below:
 
