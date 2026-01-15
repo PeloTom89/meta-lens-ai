@@ -3,6 +3,7 @@ package com.metalens.app.ui.screens
 import android.content.Intent
 import android.net.Uri
 import androidx.activity.ComponentActivity
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -13,7 +14,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.background
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bluetooth
 import androidx.compose.material.icons.filled.BluetoothDisabled
@@ -22,15 +26,20 @@ import androidx.compose.material.icons.filled.Coffee
 import androidx.compose.material.icons.filled.Devices
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Wifi
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Key
 import androidx.compose.material.icons.filled.Psychology
+import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -75,6 +84,11 @@ import org.json.JSONObject
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.coroutines.resume
 
+private enum class AiInstructionsModule {
+    Vision,
+    Voice,
+}
+
 @Composable
 fun SettingsScreen(
     modifier: Modifier = Modifier,
@@ -103,8 +117,13 @@ fun SettingsScreen(
 
     var showEditApiKeyDialog by rememberSaveable { mutableStateOf(false) }
     var showSelectModelDialog by rememberSaveable { mutableStateOf(false) }
+    var showPersonalizeAiDialog by rememberSaveable { mutableStateOf(false) }
     var apiKeyDraft by rememberSaveable { mutableStateOf(openAiApiKey) }
     var modelDraft by rememberSaveable { mutableStateOf(openAiModel) }
+
+    var selectedAiModule by rememberSaveable { mutableStateOf(AiInstructionsModule.Vision) }
+    var visionInstructionsDraft by rememberSaveable { mutableStateOf("") }
+    var voiceInstructionsDraft by rememberSaveable { mutableStateOf("") }
 
     val cameraQualityOptions =
         rememberSaveable {
@@ -143,6 +162,13 @@ fun SettingsScreen(
     LaunchedEffect(showSelectModelDialog) {
         if (showSelectModelDialog) {
             modelDraft = openAiModel
+        }
+    }
+
+    LaunchedEffect(showPersonalizeAiDialog) {
+        if (showPersonalizeAiDialog) {
+            visionInstructionsDraft = AppSettings.getPictureAnalysisSystemInstructions(context)
+            voiceInstructionsDraft = AppSettings.getConversationSystemInstructions(context)
         }
     }
 
@@ -260,6 +286,156 @@ fun SettingsScreen(
                     onClick = { showSelectModelDialog = false },
                 ) {
                     Text(stringResource(R.string.common_cancel))
+                }
+            },
+        )
+    }
+
+    if (showPersonalizeAiDialog) {
+        val defaultVision = context.getString(R.string.picture_analysis_system_instructions).trim()
+        val defaultVoice = context.getString(R.string.conversation_system_instructions).trim()
+
+        val isVisionSelected = selectedAiModule == AiInstructionsModule.Vision
+        val editorValue = if (isVisionSelected) visionInstructionsDraft else voiceInstructionsDraft
+
+        AlertDialog(
+            onDismissRequest = { showPersonalizeAiDialog = false },
+            containerColor = MaterialTheme.colorScheme.surface,
+            titleContentColor = MaterialTheme.colorScheme.onSurface,
+            textContentColor = MaterialTheme.colorScheme.onSurface,
+            title = { Text(stringResource(R.string.settings_ai_personalize_title)) },
+            text = {
+                var moduleMenuExpanded by rememberSaveable { mutableStateOf(false) }
+                val selectedModuleLabel =
+                    if (selectedAiModule == AiInstructionsModule.Vision) {
+                        stringResource(R.string.settings_ai_personalize_vision)
+                    } else {
+                        stringResource(R.string.settings_ai_personalize_voice)
+                    }
+
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text(
+                        text = stringResource(R.string.settings_ai_personalize_module_label),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+
+                    Box(modifier = Modifier.fillMaxWidth()) {
+                        OutlinedButton(
+                            onClick = { moduleMenuExpanded = true },
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Text(
+                                text = selectedModuleLabel,
+                                modifier = Modifier.weight(1f),
+                            )
+                            Icon(
+                                imageVector = Icons.Filled.ArrowDropDown,
+                                contentDescription = null,
+                            )
+                        }
+
+                        DropdownMenu(
+                            expanded = moduleMenuExpanded,
+                            onDismissRequest = { moduleMenuExpanded = false },
+                            modifier =
+                                Modifier
+                                    .widthIn(min = 220.dp)
+                                    .background(
+                                        color = MaterialTheme.colorScheme.surface,
+                                        shape = MaterialTheme.shapes.medium,
+                                    ),
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.settings_ai_personalize_vision)) },
+                                onClick = {
+                                    selectedAiModule = AiInstructionsModule.Vision
+                                    moduleMenuExpanded = false
+                                },
+                            )
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.settings_ai_personalize_voice)) },
+                                onClick = {
+                                    selectedAiModule = AiInstructionsModule.Voice
+                                    moduleMenuExpanded = false
+                                },
+                            )
+                        }
+                    }
+
+                    OutlinedTextField(
+                        value = editorValue,
+                        onValueChange = { new ->
+                            if (selectedAiModule == AiInstructionsModule.Vision) {
+                                visionInstructionsDraft = new
+                            } else {
+                                voiceInstructionsDraft = new
+                            }
+                        },
+                        label = { Text(stringResource(R.string.settings_ai_personalize_instructions_label)) },
+                        placeholder = { Text(stringResource(R.string.settings_ai_personalize_instructions_hint)) },
+                        modifier = Modifier.fillMaxWidth(),
+                        minLines = 6,
+                        maxLines = 12,
+                        singleLine = false,
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    colors =
+                        ButtonDefaults.textButtonColors(
+                            contentColor = MaterialTheme.colorScheme.primary,
+                        ),
+                    onClick = {
+                        val normalizedVision = visionInstructionsDraft.trim()
+                        val normalizedVoice = voiceInstructionsDraft.trim()
+
+                        if (normalizedVision.isBlank() || normalizedVision == defaultVision) {
+                            AppSettings.resetPictureAnalysisSystemInstructions(context)
+                        } else {
+                            AppSettings.setPictureAnalysisSystemInstructions(context, normalizedVision)
+                        }
+
+                        if (normalizedVoice.isBlank() || normalizedVoice == defaultVoice) {
+                            AppSettings.resetConversationSystemInstructions(context)
+                        } else {
+                            AppSettings.setConversationSystemInstructions(context, normalizedVoice)
+                        }
+
+                        showPersonalizeAiDialog = false
+                    },
+                ) {
+                    Text(stringResource(R.string.common_save))
+                }
+            },
+            dismissButton = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    TextButton(
+                        colors =
+                            ButtonDefaults.textButtonColors(
+                                contentColor = MaterialTheme.colorScheme.error,
+                            ),
+                        onClick = {
+                            if (selectedAiModule == AiInstructionsModule.Vision) {
+                                visionInstructionsDraft = defaultVision
+                            } else {
+                                voiceInstructionsDraft = defaultVoice
+                            }
+                        },
+                    ) {
+                        Text(stringResource(R.string.settings_ai_reset_factory))
+                    }
+
+                    TextButton(
+                        colors =
+                            ButtonDefaults.textButtonColors(
+                                contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            ),
+                        onClick = { showPersonalizeAiDialog = false },
+                    ) {
+                        Text(stringResource(R.string.common_close))
+                    }
                 }
             },
         )
@@ -550,6 +726,16 @@ fun SettingsScreen(
             subtitle = openAiModelDisplayName(openAiModel),
             icon = Icons.Filled.Psychology,
             onClick = { showSelectModelDialog = true },
+            modifier = Modifier.fillMaxWidth(),
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        FeatureActionCard(
+            title = stringResource(R.string.settings_ai_personalize),
+            subtitle = stringResource(R.string.settings_ai_personalize_subtitle),
+            icon = Icons.Filled.Tune,
+            onClick = { showPersonalizeAiDialog = true },
             modifier = Modifier.fillMaxWidth(),
         )
 

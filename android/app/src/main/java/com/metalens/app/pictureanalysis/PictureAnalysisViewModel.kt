@@ -51,7 +51,7 @@ class PictureAnalysisViewModel(
                         configuredModel.ifBlank { "gpt-4o-mini" }
                     }
 
-                val prompt = ctx.getString(R.string.picture_analysis_system_instructions).trim()
+                val prompt = AppSettings.getPictureAnalysisSystemInstructions(ctx).trim()
 
                 val result =
                     withContext(Dispatchers.IO) {

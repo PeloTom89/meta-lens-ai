@@ -67,7 +67,7 @@ class ConversationSession(
 
                 val apiKey = AppSettings.getOpenAiApiKey(appContext).trim()
                 val model = AppSettings.getOpenAiModel(appContext).trim()
-                val systemInstructions = appContext.getString(R.string.conversation_system_instructions).trim()
+                val systemInstructions = AppSettings.getConversationSystemInstructions(appContext).trim()
 
                 val client =
                     OpenAIRealtimeClient(

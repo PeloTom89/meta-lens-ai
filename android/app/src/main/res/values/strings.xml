@@ -49,6 +49,15 @@
     <string name="settings_openai_model">OpenAI Model</string>
     <string name="settings_openai_model_gpt4o_desc">A high-capability larger, more capable and higher cost model</string>
     <string name="settings_openai_model_gpt4omini_desc">A lightweight model optimized for cost-efficient usage</string>
+    <string name="settings_ai_personalize">Personalize</string>
+    <string name="settings_ai_personalize_subtitle">Customize system instructions</string>
+    <string name="settings_ai_personalize_title">Personalize AI</string>
+    <string name="settings_ai_personalize_module_label">Instructions for:</string>
+    <string name="settings_ai_personalize_vision">AI Picture Analysis</string>
+    <string name="settings_ai_personalize_voice">AI Conversation</string>
+    <string name="settings_ai_personalize_instructions_label">System instructions</string>
+    <string name="settings_ai_personalize_instructions_hint">Type your instructions…</string>
+    <string name="settings_ai_reset_factory">Reset to Default</string>
     <string name="settings_version">Version</string>
     <string name="settings_support_development">Support development</string>
     <string name="settings_support_development_subtitle">Buy Me a Coffee</string>
