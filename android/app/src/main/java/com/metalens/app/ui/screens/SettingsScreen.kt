@@ -277,17 +277,19 @@ fun SettingsScreen(
                 stringResource(R.string.glasses_status_not_connected)
             }
 
+        // We only show "Disconnect" when the glasses are actually connected.
+        val canDisconnectGlasses = uiState.isRegistered && uiState.hasActiveDevice
         FeatureActionCard(
             title =
-                if (uiState.isRegistered) {
+                if (canDisconnectGlasses) {
                     stringResource(R.string.disconnect_my_glasses)
                 } else {
                     stringResource(R.string.connect_my_glasses)
                 },
             subtitle = glassesStatusSubtitle,
-            icon = if (uiState.isRegistered) Icons.Filled.BluetoothDisabled else Icons.Filled.Bluetooth,
+            icon = if (canDisconnectGlasses) Icons.Filled.BluetoothDisabled else Icons.Filled.Bluetooth,
             onClick = {
-                if (uiState.isRegistered) {
+                if (canDisconnectGlasses) {
                     wearablesViewModel.startUnregistration()
                 } else {
                     wearablesViewModel.startRegistration()
