@@ -59,6 +59,13 @@
     <string name="settings_ai_personalize_instructions_hint">Type your instructions…</string>
     <string name="settings_ai_reset_factory">Reset to Default</string>
     <string name="settings_version">Version</string>
+    <string name="settings_feedback">Feedback</string>
+    <string name="settings_feedback_subtitle">Tell us what to improve</string>
+    <string name="settings_feedback_dialog_title">Send feedback</string>
+    <string name="settings_feedback_hint">Share your feedback about MetaLens AI — bugs, ideas, or suggestions…</string>
+    <string name="settings_feedback_send">Send</string>
+    <string name="settings_feedback_opening_form">Opening feedback form…</string>
+    <string name="settings_feedback_form_not_configured">Feedback form is not configured.</string>
     <string name="settings_support_development">Support development</string>
     <string name="settings_support_development_subtitle">Buy Me a Coffee</string>
     <string name="settings_support_development_url">https://buymeacoffee.com/przemek_nowicki</string>

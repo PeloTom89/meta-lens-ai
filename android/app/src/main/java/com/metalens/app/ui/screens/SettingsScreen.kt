@@ -2,6 +2,8 @@ package com.metalens.app.ui.screens
 
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -24,6 +26,7 @@ import androidx.compose.material.icons.filled.BluetoothDisabled
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Coffee
 import androidx.compose.material.icons.filled.Devices
+import androidx.compose.material.icons.filled.Feedback
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Wifi
 import androidx.compose.material.icons.filled.ArrowDropDown
@@ -82,6 +85,8 @@ import okhttp3.WebSocketListener
 import org.json.JSONArray
 import org.json.JSONObject
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.Locale
+import java.util.TimeZone
 import kotlin.coroutines.resume
 
 private enum class AiInstructionsModule {
@@ -147,6 +152,9 @@ fun SettingsScreen(
     var isCheckingForUpdate by rememberSaveable { mutableStateOf(false) }
     var updateDialogMessage by rememberSaveable { mutableStateOf<String?>(null) }
     var updateDialogReleaseUrl by rememberSaveable { mutableStateOf<String?>(null) }
+
+    var showFeedbackDialog by rememberSaveable { mutableStateOf(false) }
+    var feedbackDraft by rememberSaveable { mutableStateOf("") }
 
     LaunchedEffect(Unit) {
         wearablesViewModel.startMonitoring()
@@ -605,6 +613,88 @@ fun SettingsScreen(
         )
     }
 
+    if (showFeedbackDialog) {
+        val openingFormText = stringResource(R.string.settings_feedback_opening_form)
+        val notConfiguredText = stringResource(R.string.settings_feedback_form_not_configured)
+        AlertDialog(
+            onDismissRequest = { showFeedbackDialog = false },
+            containerColor = MaterialTheme.colorScheme.surface,
+            titleContentColor = MaterialTheme.colorScheme.onSurface,
+            textContentColor = MaterialTheme.colorScheme.onSurface,
+            title = { Text(stringResource(R.string.settings_feedback_dialog_title)) },
+            text = {
+                OutlinedTextField(
+                    value = feedbackDraft,
+                    onValueChange = { feedbackDraft = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = { Text(stringResource(R.string.settings_feedback_hint)) },
+                    minLines = 6,
+                    maxLines = 12,
+                    singleLine = false,
+                )
+            },
+            confirmButton = {
+                val formBaseUrl = stringResource(R.string.settings_feedback_form_base_url).trim()
+                val entryFeedback = stringResource(R.string.settings_feedback_form_entry_feedback).trim()
+                val entryAppVersion = stringResource(R.string.settings_feedback_form_entry_app_version).trim()
+                val entryAndroidVersion = stringResource(R.string.settings_feedback_form_entry_android_version).trim()
+                val entryDevice = stringResource(R.string.settings_feedback_form_entry_device).trim()
+                val entryLocaleTz = stringResource(R.string.settings_feedback_form_entry_locale_timezone).trim()
+
+                val canSend = feedbackDraft.trim().isNotBlank()
+                TextButton(
+                    enabled = canSend,
+                    colors =
+                        ButtonDefaults.textButtonColors(
+                            contentColor = MaterialTheme.colorScheme.primary,
+                        ),
+                    onClick = {
+                        val feedback = feedbackDraft.trim()
+                        if (feedback.isBlank()) return@TextButton
+
+                        if (formBaseUrl.isBlank() || entryFeedback.isBlank()) {
+                            Toast.makeText(context, notConfiguredText, Toast.LENGTH_SHORT).show()
+                            return@TextButton
+                        }
+
+                        val appVersion = "${BuildConfig.VERSION_NAME} (build ${BuildConfig.VERSION_CODE})"
+                        val androidVersion = "Android ${Build.VERSION.RELEASE} (SDK ${Build.VERSION.SDK_INT})"
+                        val device = "${Build.MANUFACTURER} ${Build.MODEL}"
+                        val localeTimezone = "${Locale.getDefault().toLanguageTag()} / ${TimeZone.getDefault().id}"
+
+                        val uriBuilder = Uri.parse(formBaseUrl).buildUpon()
+                        uriBuilder.appendQueryParameter(entryFeedback, feedback)
+                        if (entryAppVersion.isNotBlank()) uriBuilder.appendQueryParameter(entryAppVersion, appVersion)
+                        if (entryAndroidVersion.isNotBlank()) uriBuilder.appendQueryParameter(entryAndroidVersion, androidVersion)
+                        if (entryDevice.isNotBlank()) uriBuilder.appendQueryParameter(entryDevice, device)
+                        if (entryLocaleTz.isNotBlank()) uriBuilder.appendQueryParameter(entryLocaleTz, localeTimezone)
+
+                        val intent = Intent(Intent.ACTION_VIEW, uriBuilder.build())
+                        context.startActivity(intent)
+
+                        // We're opening a prefilled form in the browser; user still needs to submit it.
+                        feedbackDraft = ""
+                        showFeedbackDialog = false
+                        Toast.makeText(context, openingFormText, Toast.LENGTH_SHORT).show()
+                    },
+                ) {
+                    Text(stringResource(R.string.settings_feedback_send))
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    colors =
+                        ButtonDefaults.textButtonColors(
+                            contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        ),
+                    onClick = { showFeedbackDialog = false },
+                ) {
+                    Text(stringResource(R.string.common_cancel))
+                }
+            },
+        )
+    }
+
     Column(
         modifier =
             modifier
@@ -840,6 +930,16 @@ fun SettingsScreen(
                     isCheckingForUpdate = false
                 }
             },
+            modifier = Modifier.fillMaxWidth(),
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        FeatureActionCard(
+            title = stringResource(R.string.settings_feedback),
+            subtitle = stringResource(R.string.settings_feedback_subtitle),
+            icon = Icons.Filled.Feedback,
+            onClick = { showFeedbackDialog = true },
             modifier = Modifier.fillMaxWidth(),
         )
 

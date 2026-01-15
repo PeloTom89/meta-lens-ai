@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Google Forms "prefill" config (public, shipped in APK). -->
+    <string name="settings_feedback_form_base_url" translatable="false">https://docs.google.com/forms/d/e/1FAIpQLScjROaRp2mwdv63Qry5EQ79ZxNQAUWSOnxo47ka4VT-FSXguw/viewform?usp=pp_url</string>
+    <string name="settings_feedback_form_entry_feedback" translatable="false">entry.1917750225</string>
+    <string name="settings_feedback_form_entry_app_version" translatable="false">entry.1723743022</string>
+    <string name="settings_feedback_form_entry_android_version" translatable="false">entry.2025031434</string>
+    <string name="settings_feedback_form_entry_device" translatable="false">entry.465979297</string>
+    <string name="settings_feedback_form_entry_locale_timezone" translatable="false">entry.2100553971</string>
+</resources>
