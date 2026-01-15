@@ -87,3 +87,10 @@ Critical Steps to Run MetaLens on Your Android Phone.
 5. Click Connection Check; if the provided API key is correct, you should see a “Connection OK” status.
 6. Go to the Home screen—if the buttons are not grayed out, you’re good to go.
 
+
+## Privacy and Security
+- Audio text and video data are used only for AI processing using your own OpenAI account and API key
+- No user data is uploaded to any third party except OpenAI, which is required for AI processing.
+- Your OpenAI API key is stored locally on your phone, is never logged, and is shared only with the OpenAI platform to enable AI processing.
+- API communications use HTTPS encryption.
+- The app complies with Meta’s privacy policies.
