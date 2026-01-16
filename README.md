@@ -76,7 +76,7 @@ Critical Steps to Run MetaLens on Your Android Phone.
 > 4. Enable the **Developer Mode** toggle  
 > 5. Tap **Enable** to confirm
 >
-> <img src="docs/images/meta-view-develop-mode.png" alt="Meta AI Developer Mode" width="70%" />
+> <img src="docs/images/meta-view-develop-mode.png" alt="Meta AI Developer Mode" width="50%" />
 >
 > See [Meta Wearables Setup Guide](https://wearables.developer.meta.com/docs/getting-started-toolkit) for detailed instructions.
 
