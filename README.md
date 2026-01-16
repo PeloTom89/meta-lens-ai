@@ -99,6 +99,11 @@ Critical Steps to Run MetaLens on Your Android Phone.
 - API communications use HTTPS encryption.
 - The app complies with Meta’s privacy policies.
 
+## Support Development
+
+If this project is useful to you, you can support its development here:  
+→ [Buy Me a Coffee](https://buymeacoffee.com/przemek_nowicki)
+
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
