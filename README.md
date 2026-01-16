@@ -1,4 +1,4 @@
-## MetaLens
+## MetaLens AI
 
 Talk to ChatGPT, take pictures, and analyze what you see through your Meta Glasses.
 
