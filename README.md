@@ -94,6 +94,7 @@ Example installation screens on a Xiaomi Poco F6:
   <img src="docs/screenshots/instalation/step5.jpg" width="24%" alt="Installation Step 5" />
   <img src="docs/screenshots/instalation/step6.jpg" width="24%" alt="Installation Step 6" />
   <img src="docs/screenshots/instalation/step7.jpg" width="24%" alt="Installation Step 7" />
+  <img src="docs/screenshots/instalation/step8.jpg" width="24%" alt="Installation Step 8" />
 </p>
 
 1. Open this page on your phone and tap the [.apk](https://github.com/przemek-nowicki/meta-lens-ai/releases/download/v0.1.0/meta-lens-ai-v0.1.0.apk) download. When prompted, choose Settings to allow installs from this source.
@@ -102,9 +103,10 @@ Example installation screens on a Xiaomi Poco F6:
 4. Confirm the **Install** prompt for MetaLens and wait for installation to finish.
 5. After the security scan, tap **Open** (or find the MetaLens icon on your home screen).
 6. On first launch, allow the nearby devices permission so MetaLens can connect to your glasses.
-7. Open **Settings** and tap **Connect my glasses**; when connected, your device appears under **Connected devices**.
-8. Get your [OpenAI API key](https://help.openai.com/en/articles/4936850-where-do-i-find-my-openai-api-key?utm_source=chatgpt.com) from the OpenAI platform and paste it into the app. 
-9. Tap **Check Connection**; if it shows **Connection OK**, you’re ready to go.
+7. Open **Settings** and tap **Connect my glasses**.
+8. On the Meta device prompt, enable the toggle and tap **Connect** to allow MetaLens to pair.
+9. Get your [OpenAI API key](https://help.openai.com/en/articles/4936850-where-do-i-find-my-openai-api-key?utm_source=chatgpt.com) from the OpenAI platform and paste it into the field and save it.
+10. Tap **Check Connection**; if it shows **Connection OK**, you’re ready to go.
 
 ## Privacy and Security
 - Audio text and video data are used only for AI processing using your own OpenAI account and API key
