@@ -24,12 +24,6 @@ Talk to ChatGPT, take photos, let AI analyze what you see, and live-stream direc
 
 ## Application features
 
-> [!TIP]
-> For the best streaming experience in MetaLens AI, battery restrictions for the app should be disabled.
-> Setting MetaLens AI to **No restrictions** / **Unrestricted** helps prevent the system from limiting 
-> background activity, which can cause the stream to pause or disconnect.
-> ``Settings → Battery →  MetaLens AI (app must be running) → Battery Saver → No restriction``
-
 ### <img src="https://upload.wikimedia.org/wikipedia/commons/b/b8/YouTube_Logo_2017.svg" alt="YouTube" height="16">
 Live-stream what the glasses’ camera sees to YouTube with hands-free control.
 
@@ -37,6 +31,12 @@ Live-stream what the glasses’ camera sees to YouTube with hands-free control.
 
 ### <img src="https://upload.wikimedia.org/wikipedia/commons/c/ce/Twitch_logo_2019.svg" alt="Twitch" height="16">
 Live-stream what the glasses’ camera sees to Twitch with hands-free control.
+
+> [!TIP]
+> For the best streaming experience in MetaLens AI, battery restrictions for the app should be disabled.
+> Setting MetaLens AI to **No restrictions** / **Unrestricted** helps prevent the system from limiting 
+> background activity, which can cause the stream to pause or disconnect.
+> ``Settings → Battery →  MetaLens AI (app must be running) → Battery Saver → No restriction``
 
 ### <img src="https://upload.wikimedia.org/wikipedia/commons/0/04/ChatGPT_logo.svg" height="16"> Conversation
 A hands-free voice conversation with ChatGPT, including a live transcript view.
