@@ -75,14 +75,13 @@ To run MetaLens AI app, make sure the following checklist is completed:
 
 ## Detailed Installation Steps
 
-Critical Steps to Run MetaLens on Your Android Phone.
-
-1) Developer Mode enabled in the Meta AI app:
+Critical Steps to Run MetaLens AI on Your Android Phone is to enable **Developer Mode** 
 
 > [!WARNING]
 > **Developer Mode Required**  - Before You Start Instalation MetLens AI
 > Your Meta glasses must have **Developer Mode enabled** in the Meta AI app before the MetaLens AI app can connect to them.
 > **How to enable:**  
+> Watch this short [walkthrough](https://www.youtube.com/shorts/v34u_DYSRBM) or follow the steps below:
 > 1. Open **Meta AI** app on your phone  
 > 2. Go to **Settings** → **App Info**  Note: This is not the glasses settings (found in the top-left ☰ menu, then go to Settings at the bottom of the menu.).
 > 3. Tap **App version** number **five times quickly** — this reveals the Developer Mode toggle  
@@ -132,6 +131,28 @@ Example installation screens on a Xiaomi Poco F6:
 
 If this project is useful to you, you can support its development here:  
 → [Buy Me a Coffee](https://buymeacoffee.com/przemek_nowicki)
+
+## FAQ
+
+- **Q: I get "Error opening link" when connecting my glasses.**  
+  **A:** Make sure **Developer Mode** is enabled in the Meta AI app, the glasses are connected in Meta AI. Watch this [short tutorial](https://www.youtube.com/shorts/v34u_DYSRBM).
+
+- **Q: The stream pauses or disconnects.**  
+  **A:** Disable battery restrictions for MetaLens AI:  
+  `Settings → Battery → MetaLens AI → Battery Saver → No restriction`.
+
+- **Q: The Bluetooth disconnects.**  
+  **A:** Disable battery restrictions for MetaLens AI:  
+  `Settings → Battery → MetaLens AI → Battery Saver → No restriction`.  
+
+- **Q: I can’t see the app in the Play Store.**  
+  **A:** MetaLens AI uses a new Meta SDK not yet publicly released, so it’s distributed via APK for now.
+
+- **Q: “Connection OK” fails in AI Settings.**  
+  **A:** Verify your OpenAI API key is valid, saved, and that your phone has internet access.
+
+- **Q: iOS version?**  
+  **A:** iOS is in progress—follow updates at [metalensai.com](https://metalensai.com/).
 
 ## License
 
