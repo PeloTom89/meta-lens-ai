@@ -3,11 +3,11 @@
 Talk to ChatGPT, take photos, let AI analyze what you see, and live-stream directly from your Meta Glasses to YouTube or Twitch.
 
 > [!NOTE]
-> **Developer Mode** must be enabled in the Meta View app before you start. See instructions below.
+> **Developer Mode** must be enabled in the **Meta** AI app before you start. See instructions below.
 
 
 > 📥 **Quick download**
-> - **Android Beta Version**: Download the latest [.apk](https://github.com/przemek-nowicki/meta-lens-ai/releases/download/v0.4.0/meta-lens-ai-v0.4.0.apk), then follow the installation steps below.
+> - **Android**: Download the latest [.apk](https://github.com/przemek-nowicki/meta-lens-ai/releases/download/v0.4.0/meta-lens-ai-v0.4.0.apk) on your phone ([see video](https://youtube.com/shorts/QVVm1t4VBfk)),then follow the installation steps below.
 > - **iOS**: Work in progress. Follow updates and early access at [metalensai.com](https://metalensai.com/).
 
 ## UI Preview
@@ -38,7 +38,7 @@ Live-stream what the glasses’ camera sees to Twitch with hands-free control.
 > background activity, which can cause the stream to pause or disconnect.
 > ``Settings → Battery →  MetaLens AI (app must be running) → Battery Saver → No restriction``
 >
-> Watch this short [walkthrough](https://www.youtube.com/shorts/-JmbuCbm_T8).
+> Watch this short [walkthrough](https://www.youtube.com/shorts/-JmbuCbm_T8) or [this one](https://youtube.com/shorts/QVVm1t4VBfk).
 
 ### <img src="https://upload.wikimedia.org/wikipedia/commons/0/04/ChatGPT_logo.svg" height="16"> Conversation
 A hands-free voice conversation with ChatGPT, including a live transcript view.
