@@ -155,7 +155,7 @@ If this project is useful to you, you can support its development here:
 - **Q: "Connection OK" fails in AI Settings.**  
   **A:** Verify your OpenAI API key is valid, saved, and that your phone has internet access.
 
-- **Q: How to update MetaLens AI?**
+- **Q: How to update MetaLens AI?**   
   **A:** In the MetaLens AI app, go to "Settings', scroll down to the "About" section, and tap "Version".  If you’re not up to date, tap "Open release" link, find the latest release, download **.apk** file, and install it.
   See this [short tutorial](https://www.youtube.com/shorts/vsWqIRdu12c).
 
