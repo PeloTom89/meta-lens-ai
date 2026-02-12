@@ -3,7 +3,7 @@
 Talk to ChatGPT, take photos, let AI analyze what you see, and live-stream directly from your Meta Glasses to YouTube or Twitch.
 
 > [!NOTE]
-> **Developer Mode** must be enabled in the **Meta** AI app before you start. See instructions below.
+> **Developer Mode** must be enabled in the **Meta** AI app before you start. See [instructions](https://metalensai.com/installation).
 
 
 > 📥 **Quick download**
