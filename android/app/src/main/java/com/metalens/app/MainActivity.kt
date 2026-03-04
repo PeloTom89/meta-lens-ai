@@ -2,6 +2,7 @@ package com.metalens.app
 
 import android.Manifest.permission.BLUETOOTH
 import android.Manifest.permission.BLUETOOTH_CONNECT
+import android.Manifest.permission.BLUETOOTH_SCAN
 import android.Manifest.permission.INTERNET
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -24,7 +25,7 @@ import kotlinx.coroutines.sync.withLock
 
 class MainActivity : ComponentActivity() {
     companion object {
-        val PERMISSIONS: Array<String> = arrayOf(BLUETOOTH, BLUETOOTH_CONNECT, INTERNET)
+        val PERMISSIONS: Array<String> = arrayOf(BLUETOOTH, BLUETOOTH_CONNECT, BLUETOOTH_SCAN, INTERNET)
     }
 
     private val wearablesViewModel: WearablesViewModel by viewModels()
@@ -76,7 +77,7 @@ class MainActivity : ComponentActivity() {
                 onPermissionsGranted()
             } else {
                 wearablesViewModel.setRecentError(
-                    "Allow All Permissions (Bluetooth, Bluetooth Connect, Internet)"
+                    "Allow All Permissions (Bluetooth, Bluetooth Connect, Bluetooth Scan, Internet)"
                 )
             }
         }.launch(PERMISSIONS)
