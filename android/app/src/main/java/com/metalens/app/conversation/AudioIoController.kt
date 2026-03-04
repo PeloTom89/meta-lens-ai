@@ -11,6 +11,7 @@ import android.media.AudioRecord
 import android.media.AudioTrack
 import android.media.MediaRecorder
 import android.os.Build
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -98,6 +99,11 @@ class AudioIoController(
         if (audioManager.isBluetoothScoOn) return true
 
         return suspendCancellableCoroutine { cont ->
+            // Track whether start() has been called so we can distinguish the initial
+            // DISCONNECTED state from a post-connection DISCONNECTED (= failed attempt).
+            // Gen 1 Ray-Ban glasses report connection failures as DISCONNECTED rather than ERROR.
+            val started = AtomicBoolean(false)
+
             val receiver =
                 object : BroadcastReceiver() {
                     override fun onReceive(context: Context, intent: Intent) {
@@ -114,7 +120,11 @@ class AudioIoController(
                                 // ignore
                             }
                             if (!cont.isCompleted) cont.resume(true)
-                        } else if (state == AudioManager.SCO_AUDIO_STATE_ERROR) {
+                        } else if (state == AudioManager.SCO_AUDIO_STATE_ERROR ||
+                            (state == AudioManager.SCO_AUDIO_STATE_DISCONNECTED && started.get())) {
+                            // DISCONNECTED after start() means the connection attempt failed
+                            // (e.g. Gen 1 Ray-Ban glasses). Fail fast so the retry loop can
+                            // attempt again rather than waiting for the full timeout.
                             try {
                                 appContext.unregisterReceiver(this)
                             } catch (_: Throwable) {
@@ -146,6 +156,7 @@ class AudioIoController(
                 }
             }
 
+            started.set(true)
             start()
         }
     }
