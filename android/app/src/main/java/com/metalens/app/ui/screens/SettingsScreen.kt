@@ -23,6 +23,7 @@ import androidx.compose.foundation.background
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bluetooth
 import androidx.compose.material.icons.filled.BluetoothDisabled
+import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Coffee
 import androidx.compose.material.icons.filled.Devices
@@ -155,6 +156,8 @@ fun SettingsScreen(
 
     var showFeedbackDialog by rememberSaveable { mutableStateOf(false) }
     var feedbackDraft by rememberSaveable { mutableStateOf("") }
+
+    var showDiagnosticsDialog by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         wearablesViewModel.startMonitoring()
@@ -710,6 +713,69 @@ fun SettingsScreen(
         )
     }
 
+    if (showDiagnosticsDialog) {
+        val noneLabel = stringResource(R.string.settings_diagnostics_none)
+        AlertDialog(
+            onDismissRequest = { showDiagnosticsDialog = false },
+            containerColor = MaterialTheme.colorScheme.surface,
+            titleContentColor = MaterialTheme.colorScheme.onSurface,
+            textContentColor = MaterialTheme.colorScheme.onSurface,
+            title = { Text(stringResource(R.string.settings_diagnostics_title)) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    SettingsKeyValueRow(
+                        key = stringResource(R.string.settings_diagnostics_registration_state),
+                        value = uiState.registrationStateLabel,
+                    )
+                    SettingsKeyValueRow(
+                        key = stringResource(R.string.settings_diagnostics_active_device),
+                        value = uiState.activeDevice?.let { id ->
+                            uiState.deviceDisplayNames[id.toString()] ?: id.toString()
+                        } ?: noneLabel,
+                    )
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Text(
+                            text = stringResource(R.string.settings_diagnostics_all_devices),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        if (uiState.devices.isEmpty()) {
+                            Text(
+                                text = noneLabel,
+                                style = MaterialTheme.typography.bodyMedium,
+                            )
+                        } else {
+                            uiState.devices.forEach { deviceId ->
+                                val id = deviceId.toString()
+                                val name = uiState.deviceDisplayNames[id]
+                                Text(
+                                    text = if (name != null) "$name ($id)" else id,
+                                    style = MaterialTheme.typography.bodySmall,
+                                )
+                            }
+                        }
+                    }
+                    Text(
+                        text = stringResource(R.string.settings_diagnostics_hint),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    colors =
+                        ButtonDefaults.textButtonColors(
+                            contentColor = MaterialTheme.colorScheme.primary,
+                        ),
+                    onClick = { showDiagnosticsDialog = false },
+                ) {
+                    Text(stringResource(R.string.common_close))
+                }
+            },
+        )
+    }
+
     Column(
         modifier =
             modifier
@@ -783,6 +849,16 @@ fun SettingsScreen(
             icon = Icons.Filled.Devices,
             onClick = { showConnectedDevicesDialog = true },
             enabled = connectedDevices.isNotEmpty(),
+            modifier = Modifier.fillMaxWidth(),
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        FeatureActionCard(
+            title = stringResource(R.string.settings_diagnostics),
+            subtitle = stringResource(R.string.settings_diagnostics_subtitle),
+            icon = Icons.Filled.BugReport,
+            onClick = { showDiagnosticsDialog = true },
             modifier = Modifier.fillMaxWidth(),
         )
 

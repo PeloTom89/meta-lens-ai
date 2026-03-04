@@ -5,6 +5,7 @@ import android.Manifest.permission.BLUETOOTH_CONNECT
 import android.Manifest.permission.BLUETOOTH_SCAN
 import android.Manifest.permission.INTERNET
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts.RequestMultiplePermissions
@@ -25,6 +26,7 @@ import kotlinx.coroutines.sync.withLock
 
 class MainActivity : ComponentActivity() {
     companion object {
+        private const val TAG = "MainActivity"
         val PERMISSIONS: Array<String> = arrayOf(BLUETOOTH, BLUETOOTH_CONNECT, BLUETOOTH_SCAN, INTERNET)
     }
 
@@ -35,14 +37,17 @@ class MainActivity : ComponentActivity() {
     private val permissionsResultLauncher =
         registerForActivityResult(Wearables.RequestPermissionContract()) { result ->
             val permissionStatus = result.getOrDefault(PermissionStatus.Denied)
+            Log.d(TAG, "Wearables permission result: $permissionStatus")
             permissionContinuation?.resume(permissionStatus)
             permissionContinuation = null
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Log.d(TAG, "onCreate()")
 
         checkPermissions {
+            Log.d(TAG, "All Android permissions granted — initializing Wearables SDK")
             // Must be called before using any Wearables APIs
             Wearables.initialize(this)
             wearablesViewModel.startMonitoring()
@@ -61,6 +66,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private suspend fun requestWearablesPermission(permission: Permission): PermissionStatus {
+        Log.d(TAG, "requestWearablesPermission: $permission")
         return permissionMutex.withLock {
             suspendCancellableCoroutine { continuation ->
                 permissionContinuation = continuation
@@ -71,11 +77,14 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun checkPermissions(onPermissionsGranted: () -> Unit) {
+        Log.d(TAG, "checkPermissions(): requesting ${PERMISSIONS.toList()}")
         registerForActivityResult(RequestMultiplePermissions()) { permissionsResult ->
             val granted = permissionsResult.entries.all { it.value }
+            Log.d(TAG, "Android permissions result: $permissionsResult (allGranted=$granted)")
             if (granted) {
                 onPermissionsGranted()
             } else {
+                Log.w(TAG, "Not all Android permissions were granted: ${permissionsResult.filter { !it.value }.keys}")
                 wearablesViewModel.setRecentError(
                     "Allow All Permissions (Bluetooth, Bluetooth Connect, Bluetooth Scan, Internet)"
                 )

@@ -87,6 +87,15 @@
     <string name="settings_no_devices_found">No devices found</string>
     <string name="settings_unknown_device">Unknown device</string>
 
+    <string name="settings_diagnostics">Connection Diagnostics</string>
+    <string name="settings_diagnostics_subtitle">Tap to view detailed connection state</string>
+    <string name="settings_diagnostics_title">Connection Diagnostics</string>
+    <string name="settings_diagnostics_registration_state">Registration state</string>
+    <string name="settings_diagnostics_all_devices">All known devices</string>
+    <string name="settings_diagnostics_active_device">Active device</string>
+    <string name="settings_diagnostics_none">None</string>
+    <string name="settings_diagnostics_hint">Use adb logcat -s WearablesViewModel MainActivity StreamViewModel to see detailed logs</string>
+
     <string name="common_cancel">Cancel</string>
     <string name="common_close">Close</string>
     <string name="common_save">Save</string>

@@ -34,5 +34,8 @@ data class WearablesUiState(
 
     val connectedDevices: List<DeviceIdentifier> =
         activeDevice?.let { listOf(it) } ?: emptyList()
+
+    /** Human-readable summary of the current registration state for diagnostics. */
+    val registrationStateLabel: String = registrationState::class.simpleName ?: registrationState.toString()
 }
 
