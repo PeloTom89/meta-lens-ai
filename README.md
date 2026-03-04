@@ -66,7 +66,7 @@ You’ll also need to enable Developer Mode in the Meta AI app. Don’t worry th
 ##  Quick Setup Checklist
 
 To run MetaLens AI app, make sure the following checklist is completed:
-- Ray-Ban Meta Smart Glasses powered on
+- Ray-Ban Meta Smart Glasses powered on (Gen 1 or Gen 2)
 - Android 12 or newer installed on your phone
 - Stable internet connection
 - Bluetooth enabled on your phone

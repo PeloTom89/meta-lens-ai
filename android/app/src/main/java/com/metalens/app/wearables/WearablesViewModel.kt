@@ -1,8 +1,12 @@
 package com.metalens.app.wearables
 
+import android.app.Activity
 import android.app.Application
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Matrix
+import android.util.Log
+import androidx.exifinterface.media.ExifInterface
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.meta.wearable.dat.camera.StreamSession
@@ -16,6 +20,7 @@ import com.meta.wearable.dat.core.selectors.DeviceSelector
 import com.meta.wearable.dat.core.types.DeviceCompatibility
 import com.meta.wearable.dat.core.types.DeviceIdentifier
 import com.metalens.app.settings.AppSettings
+import java.io.ByteArrayInputStream
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -26,10 +31,18 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class WearablesViewModel(application: Application) : AndroidViewModel(application) {
+    companion object {
+        private const val TAG = "WearablesViewModel"
+    }
+
     private val _uiState = MutableStateFlow(WearablesUiState())
     val uiState: StateFlow<WearablesUiState> = _uiState.asStateFlow()
 
-    val deviceSelector: DeviceSelector = AutoDeviceSelector()
+    // Include all devices (Gen 1 and Gen 2) by not filtering out incompatible devices.
+    // By default in SDK 0.4.0+, AutoDeviceSelector filters out incompatible devices, which
+    // would exclude Ray-Ban Meta Gen 1 glasses. Passing filter = { _, _ -> true } ensures
+    // Gen 1 devices are still selected and available for camera and conversation features.
+    val deviceSelector: DeviceSelector = AutoDeviceSelector(filter = { _, _ -> true })
     private var deviceSelectorJob: Job? = null
     private var monitoringStarted = false
     private val deviceMetadataJobs = mutableMapOf<DeviceIdentifier, Job>()
@@ -93,8 +106,14 @@ class WearablesViewModel(application: Application) : AndroidViewModel(applicatio
                             state.copy(deviceDisplayNames = state.deviceDisplayNames + (idKey to name))
                         }
 
-                        if (metadata.compatibility == DeviceCompatibility.DEVICE_UPDATE_REQUIRED) {
-                            setRecentError("Device '$name' requires an update to work with this app")
+                        when (metadata.compatibility) {
+                            DeviceCompatibility.DEVICE_UPDATE_REQUIRED -> {
+                                setRecentError("Device '$name' needs a firmware update. Update your glasses via the Meta AI app.")
+                            }
+                            DeviceCompatibility.INCOMPATIBLE -> {
+                                setRecentError("Device '$name' may have limited functionality with this app. Some features might not work.")
+                            }
+                            else -> {}
                         }
                     }
                 }
@@ -102,12 +121,12 @@ class WearablesViewModel(application: Application) : AndroidViewModel(applicatio
         }
     }
 
-    fun startRegistration() {
-        Wearables.startRegistration(getApplication())
+    fun startRegistration(activity: Activity) {
+        Wearables.startRegistration(activity)
     }
 
-    fun startUnregistration() {
-        Wearables.startUnregistration(getApplication())
+    fun startUnregistration(activity: Activity) {
+        Wearables.startUnregistration(activity)
     }
 
     fun setRecentError(error: String?) {
@@ -240,7 +259,7 @@ class WearablesViewModel(application: Application) : AndroidViewModel(applicatio
                                 is PhotoData.HEIC -> {
                                     val byteArray = ByteArray(photoData.data.remaining())
                                     photoData.data.get(byteArray)
-                                    BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
+                                    decodeHeicWithOrientation(byteArray)
                                 }
                             }
                     }
@@ -330,7 +349,7 @@ class WearablesViewModel(application: Application) : AndroidViewModel(applicatio
                                 is PhotoData.HEIC -> {
                                     val byteArray = ByteArray(photoData.data.remaining())
                                     photoData.data.get(byteArray)
-                                    BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
+                                    decodeHeicWithOrientation(byteArray)
                                 }
                             }
                     }
@@ -364,6 +383,34 @@ class WearablesViewModel(application: Application) : AndroidViewModel(applicatio
         deviceSelectorJob?.cancel()
         deviceMetadataJobs.values.forEach { it.cancel() }
         deviceMetadataJobs.clear()
+    }
+
+    /**
+     * Decode a HEIC byte array to a Bitmap, applying EXIF orientation correction.
+     * Gen 1 and Gen 2 glasses may produce photos with different orientation metadata.
+     */
+    private fun decodeHeicWithOrientation(byteArray: ByteArray): Bitmap? {
+        val bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size) ?: return null
+        val matrix = Matrix()
+        try {
+            ByteArrayInputStream(byteArray).use { stream ->
+                val exif = ExifInterface(stream)
+                when (exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)) {
+                    ExifInterface.ORIENTATION_ROTATE_90 -> matrix.postRotate(90f)
+                    ExifInterface.ORIENTATION_ROTATE_180 -> matrix.postRotate(180f)
+                    ExifInterface.ORIENTATION_ROTATE_270 -> matrix.postRotate(270f)
+                    ExifInterface.ORIENTATION_FLIP_HORIZONTAL -> matrix.postScale(-1f, 1f)
+                    ExifInterface.ORIENTATION_FLIP_VERTICAL -> matrix.postScale(1f, -1f)
+                    ExifInterface.ORIENTATION_TRANSPOSE -> { matrix.postRotate(90f); matrix.postScale(-1f, 1f) }
+                    ExifInterface.ORIENTATION_TRANSVERSE -> { matrix.postRotate(270f); matrix.postScale(-1f, 1f) }
+                    else -> {}
+                }
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to read EXIF orientation from HEIC, decoding without rotation", e)
+        }
+        return if (matrix.isIdentity) bitmap
+        else Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
     }
 }
 

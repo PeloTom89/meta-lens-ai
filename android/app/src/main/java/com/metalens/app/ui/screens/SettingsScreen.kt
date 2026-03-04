@@ -759,9 +759,9 @@ fun SettingsScreen(
             icon = if (canDisconnectGlasses) Icons.Filled.BluetoothDisabled else Icons.Filled.Bluetooth,
             onClick = {
                 if (canDisconnectGlasses) {
-                    wearablesViewModel.startUnregistration()
+                    wearablesViewModel.startUnregistration(activity)
                 } else {
-                    wearablesViewModel.startRegistration()
+                    wearablesViewModel.startRegistration(activity)
                 }
             },
             modifier = Modifier.fillMaxWidth(),
